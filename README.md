@@ -2,17 +2,17 @@
 
 This project 
 
-#Prerequisites
+Prerequisites
 
   - $ install python
   - $ install pip
   - $ install flask
  
- #Running python program
+Running python program
  
   - $ cd API-Build-And-Testing-Project
   - $ python main.py
 
-#Routes 
-
-  - GET
+Routes 
+  GET all - @app.route('/', methods=['GET'])
+  GET     - @app.route('/results/<int:indexId>',methods=["GET"])
