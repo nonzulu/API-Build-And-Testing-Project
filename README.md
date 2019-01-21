@@ -1,1 +1,18 @@
 # API-Build-And-Testing-Project
+
+This project 
+
+#Prerequisites
+
+  - $ install python
+  - $ install pip
+  - $ install flask
+ 
+ #Running python program
+ 
+  - $ cd API-Build-And-Testing-Project
+  - $ python main.py
+
+#Routes 
+
+  - GET
