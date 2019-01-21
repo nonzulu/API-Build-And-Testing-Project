@@ -14,11 +14,11 @@ Running python program
   - $ python main.py
 
 Routes 
-  GET all        - '/' 
-  GET(indexId)   - '/results/<int:indexId>'
-  POST           - '/result'
-  PUT            - '/results/<int:indexId>'
-  DELETE         - '/results/<int:indexId>'
+ - GET all        - '/' 
+ - GET(indexId)   - '/results/<int:indexId>'
+ - POST           - '/result'
+ - PUT            - '/results/<int:indexId>'
+ - DELETE         - '/results/<int:indexId>'
 
 
   
