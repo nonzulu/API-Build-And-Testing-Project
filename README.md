@@ -14,5 +14,12 @@ Running python program
   - $ python main.py
 
 Routes 
-  GET all - @app.route('/', methods=['GET'])
-  GET     - @app.route('/results/<int:indexId>',methods=["GET"])
+  GET all        - '/' 
+  GET(indexId)   - '/results/<int:indexId>'
+  POST           - '/result'
+  PUT            - '/results/<int:indexId>'
+  DELETE         - '/results/<int:indexId>'
+
+
+  
+  
