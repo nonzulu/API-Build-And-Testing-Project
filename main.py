@@ -19,12 +19,12 @@ students = [
     }
 ]
 
-#curl -i http://127.0.0.1:5000/results
+#curl -i http://127.0.0.1:5000/
 @app.route('/', methods=['GET'])
 def student():
    return jsonify({'student':students})
 
-
+#curl -i http://127.0.0.1:5000/results/<intID>
 @app.route('/results/<int:indexId>',methods=["GET"])
 def get_id(indexId):
    studentId = [student for student in students if student['id'] == indexId]
@@ -32,8 +32,7 @@ def get_id(indexId):
       abort(404)
    return jsonify({'Student':studentId[0]})
 
-#curl -i -H "Content-Type: application/json" -X POST -d '{\"name\":\"Sivu\",\"physics\":30,\"maths\":90,\"chemistry\":10}' http://127.0.0.1:5000/results
-#curl -i -H "Content-Type: application/json" -X POST -d "{\"name\":\"Sivu\"}" http://127.0.0.1:5000/results
+#curl -i -H "Content-Type: application/json" -X POST -d "{\"name\":\"Sivu\",\"physics\":30,\"maths\":90,\"chemistry\":10}"" http://127.0.0.1:5000/results
 @app.route('/results',methods=['POST'])
 def add_results() : 
    if not request.json or not 'name' in request.json:    
@@ -50,7 +49,7 @@ def add_results() :
    students.append(student)
    return jsonify({'students':student}), 201
 
-#curl -i -H "Content-Type: application/json" -X PUT -d "{\"name\":\"Sivu\",\"physics\":10,\"maths\":40,\"chemistry\":30}" http://127.0.0.1:5000/results/3
+#curl -i -H "Content-Type: application/json" -X PUT -d "{\"name\":\"Sivu\",\"physics\":10,\"maths\":40,\"chemistry\":30}" http://127.0.0.1:5000/results/<intID>
 @app.route('/results/<int:indexId>', methods=['PUT'])
 def update_results(indexId):
   studentId = [student for student in students if student['id'] == indexId]
@@ -73,7 +72,7 @@ def update_results(indexId):
   studentId[0]['chemistry'] = request.json.get('chemistry',studentId[0]['chemistry'])
   return jsonify({'Updated Student':studentId[0]})
 
-#curl -i -H "Content-Type: application/json" -X DELETE -d "{\"name\":\"Sivu\"}" http://127.0.0.1:5000/results/3
+#curl -i -H "Content-Type: application/json" -X DELETE http://127.0.0.1:5000/results/<intID>
 @app.route('/results/<int:indexId>', methods=['DELETE'])
 def delete_results(indexId):
   studentId = [student for student in students if student['id'] == indexId]
