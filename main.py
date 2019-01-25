@@ -1,85 +1,102 @@
-from flask import Flask,render_template, redirect, url_for,request, jsonify, abort
+from flask import Flask,render_template, redirect, url_for,request, jsonify, abort,request
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'secret'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
+db = SQLAlchemy(app)
 
-students = [
-    {
-        'id': 1,
-        'name': 'Darren',
-        'physics': 80,
-        'maths': 60,
-        'chemistry': 45
-    },
-    {
-        'id': 2,
-        'name': 'Jerry',
-        'physics': 50, 
-        'maths': 45,
-        'chemistry': 45
-    }
-]
+class Student(db.Model):
+  id = db.Column(db.Integer, primary_key=True)
+  name = db.Column(db.String(50), nullable= False)
+  physics = db.Column(db.Integer)
+  maths = db.Column(db.Integer)
+  chemistry = db.Column(db.Integer)
+
+  def __repr__(self):
+    return f"Student('{self.name}','{self.physics}','{self.maths}','{self.chemistry}')"
+
 
 #curl -i http://127.0.0.1:5000/
-@app.route('/', methods=['GET'])
-def student():
-   return jsonify({'student':students})
+@app.route('/', methods=["GET"])
+def retreive_results():
+  data = Student.query.all()
+
+  output = []
+
+  for x in data:
+    student_data = {}
+    student_data['id'] = x.id
+    student_data['name'] = x.name
+    student_data['physics'] = x.physics
+    student_data['maths'] = x.maths
+    student_data['chemistry'] = x.chemistry
+    output.append(student_data)
+
+  return jsonify({'student': output})
 
 #curl -i http://127.0.0.1:5000/results/<intID>
 @app.route('/results/<int:indexId>',methods=["GET"])
-def get_id(indexId):
-   studentId = [student for student in students if student['id'] == indexId]
-   if len(studentId) == 0:
-      abort(404)
-   return jsonify({'Student':studentId[0]})
+def get_one_student(indexId):
+
+  student = Student.query.filter_by(id = indexId).first()
+
+  if not student:
+    return jsonify({'message':'No user found'})
+
+  student_data = {}
+  student_data['id'] = student.id
+  student_data['name'] = student.name
+  student_data['physics'] = student.physics
+  student_data['maths'] = student.maths
+  student_data['chemistry'] = student.chemistry
+
+  return jsonify({'student':student_data})
 
 #curl -i -H "Content-Type: application/json" -X POST -d "{\"name\":\"Sivu\",\"physics\":30,\"maths\":90,\"chemistry\":10}"" http://127.0.0.1:5000/results
-@app.route('/results',methods=['POST'])
-def add_results() : 
-   if not request.json or not 'name' in request.json:    
-      abort(400)
+@app.route('/results', methods=['POST'])
+def add_results():
+  data = request.get_json()
 
-   student = {
-         'id': students[-1]['id'] + 1,
-         'name': request.json['name'],
-         'physics': request.json.get('physics',""),
-         'maths': request.json.get('maths',""),
-         'chemistry': request.json.get('chemistry',"")
-      }
-  
-   students.append(student)
-   return jsonify({'students':student}), 201
+  if not data or not 'name' in data:
+    abort(400)
+
+  new_student = Student(name = data['name'],physics= data['physics'],maths= data['maths'], chemistry=data['chemistry'])
+  db.session.add(new_student)
+  db.session.commit()
+
+  return jsonify({'students':'New Student Created'}), 201
 
 #curl -i -H "Content-Type: application/json" -X PUT -d "{\"name\":\"Sivu\",\"physics\":10,\"maths\":40,\"chemistry\":30}" http://127.0.0.1:5000/results/<intID>
 @app.route('/results/<int:indexId>', methods=['PUT'])
 def update_results(indexId):
-  studentId = [student for student in students if student['id'] == indexId]
-  if len(studentId) == 0:
-    abort(404)
-  if not request.json:
-    abort(400)
-  if 'name' in request.json and type(request.json['name']) != str:
-    abort(400)
-  if 'physics' in request.json and type(request.json['physics']) != int:
-    abort(400)
-  if 'maths' in request.json and type(request.json['maths']) != int:
-    abort(404)
-  if 'chemistry' in request.json and type(request.json['chemistry']) != int:
-    abort(400)
+  
+  student = Student.query.filter_by(id = indexId).first()
 
-  studentId[0]['name'] = request.json.get('name',studentId[0]['name'])
-  studentId[0]['physics'] = request.json.get('physics',studentId[0]['physics'])
-  studentId[0]['maths'] = request.json.get('maths',studentId[0]['maths'])
-  studentId[0]['chemistry'] = request.json.get('chemistry',studentId[0]['chemistry'])
-  return jsonify({'Updated Student':studentId[0]})
+  if not student:
+    return jsonify({'message' : 'No Student found'})
+
+  student.name = request.json['name']
+  student.physics = request.json.get('physics', "")
+  student.maths = request.json.get('maths', "")
+  student.chemistry = request.json.get('chemistry', "") 
+  db.session.commit()
+  
+  return jsonify({'student':'Pass'})
 
 #curl -i -H "Content-Type: application/json" -X DELETE http://127.0.0.1:5000/results/<intID>
 @app.route('/results/<int:indexId>', methods=['DELETE'])
-def delete_results(indexId):
-  studentId = [student for student in students if student['id'] == indexId]
-  if len(studentId) == 0:
-    abort(404)
-  students.remove(studentId[0])
-  return jsonify({'Remove': True})
+def delete_student(indexId):
+
+  student = Student.query.filter_by(id = indexId).first()
+
+  if not student:
+    return jsonify({'message':'No user found'})
+
+  db.session.delete(student)
+  db.session.commit()
+
+  return jsonify({'message':'Student found and Deleted'})
 
 if __name__ == '__main__':
  app.run(debug=True)
